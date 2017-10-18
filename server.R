@@ -49,7 +49,7 @@ shinyServer(function(input, output, session) {
   })
   output$map <- renderLeaflet({
     leaflet(coordinates()[[2]], options = leafletOptions(maxZoom = 18)) %>% 
-      addTiles %>% 
+      addTiles() %>% 
       addPolygons(color = "#444444") 
   })
 })
