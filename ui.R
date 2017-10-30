@@ -15,6 +15,6 @@ shinyUI(fluidPage(
     
     mainPanel(
       leafletOutput("map")
-    ),
+    )
   )
 ))
