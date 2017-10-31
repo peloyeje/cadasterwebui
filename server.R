@@ -69,4 +69,23 @@ shinyServer(function(input, output, session) {
   })
   
   
+  get_complementary_data <- function (long, lat){
+    #gets the complementary informations : 
+    #parcelle number and area 
+    #section of the town 
+    return("lorem ipsum")
+  }
+  
+  observe({
+    leafletProxy("map") %>% clearPopups()
+    event <- input$map_shape_click
+    if (is.null(event))
+      return()
+    
+    isolate({
+      content <- get_complementary_data(event$long, event$lat)
+      leafletProxy("map") %>% addPopups(event$lng, event$lat, content)
+    })
+  })
+  
 })
