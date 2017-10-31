@@ -57,17 +57,20 @@ shinyServer(function(input, output, session) {
   })
   
 
-  #gestion de la carte 
+  #Map and polygon handeling 
   output$map <- renderLeaflet({
     leaflet() %>% addTiles() %>% setView( 2.3037,46.4317, zoom = 6)
   })
   
   observe({
+    leafletProxy("map") %>% clearShapes()
     leafletProxy("map", data = coordinates()[[1]][[2]]) %>% 
       addPolygons(color = "#444444") %>% 
       setView(coordinates()[[2]][1], coordinates()[[2]][2], zoom = 18)
   })
   
+  
+  #Complementary data handeling 
   
   get_complementary_data <- function (long, lat){
     #gets the complementary informations : 
