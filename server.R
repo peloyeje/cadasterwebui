@@ -5,6 +5,8 @@ library(tidyverse)
 library(leaflet)
 
 shinyServer(function(input, output, session) {
+  
+  #résultats de la rechrche 
   addresses_results <- eventReactive(input$search, {
     validate(
       need(nchar(input$search_address) > 10, "Not enough characters")
@@ -23,8 +25,13 @@ shinyServer(function(input, output, session) {
       selected_address$longitude,
       selected_address$latitude
     )
+    
+    list(zone, c(selected_address$longitude, selected_address$latitude))
   })
+  
 
+  
+ #bouton de choix de l'adresse 
   output$choices <- renderUI({
     if (nrow(addresses_results()) == 0) {
       textOutput("No results")
@@ -41,15 +48,25 @@ shinyServer(function(input, output, session) {
     }
   })
   
+  # bouton de recherche 
   output$find_button <- renderUI({
     if (nrow(addresses_results()) > 0) {
       actionButton("select", label = "Find my cadaster !")
     }
   
   })
+  
+
+  #gestion de la carte 
   output$map <- renderLeaflet({
-    leaflet(coordinates()[[2]], options = leafletOptions(maxZoom = 18)) %>% 
-      addTiles() %>% 
-      addPolygons(color = "#444444") 
+    leaflet() %>% addTiles() %>% setView( 2.3037,46.4317, zoom = 6)
   })
+  
+  observe({
+    leafletProxy("map", data = coordinates()[[1]][[2]]) %>% 
+      addPolygons(color = "#444444") %>% 
+      setView(coordinates()[[2]][1], coordinates()[[2]][2], zoom = 18)
+  })
+  
+  
 })
