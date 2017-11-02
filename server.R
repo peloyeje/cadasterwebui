@@ -1,7 +1,7 @@
 library(shiny)
 library(cadastertools)
 library(assertthat)
-library(tidyverse)
+library(dplyr)
 library(leaflet)
 
 shinyServer(function(input, output, session) {
@@ -20,12 +20,12 @@ shinyServer(function(input, output, session) {
     )
     selected_address <- addresses_results() %>% filter(id == input$select_addresses)
     polygons <- cadastertools::get_cadaster_sp(selected_address$citycode)
-    zone <- cadastertools::select_polygone(
+    zone <- cadastertools::get_nearest_polygon(
       polygons,
       selected_address$longitude,
       selected_address$latitude
     )
-    
+
     list(zone, c(selected_address$longitude, selected_address$latitude))
   })
   
@@ -64,7 +64,8 @@ shinyServer(function(input, output, session) {
   
   observe({
     leafletProxy("map") %>% clearShapes()
-    leafletProxy("map", data = coordinates()[[1]][[2]]) %>% 
+    message(coordinates()[[1]])
+    leafletProxy("map", data = coordinates()[[1]]) %>% 
       addPolygons(color = "#444444") %>% 
       setView(coordinates()[[2]][1], coordinates()[[2]][2], zoom = 18)
   })
