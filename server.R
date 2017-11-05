@@ -28,9 +28,9 @@ shinyServer(function(input, output, session) {
     list(zone, selected_address)
   })
   
-
   
- #bouton de choix de l'adresse 
+  
+  #bouton de choix de l'adresse 
   output$choices <- renderUI({
     if (nrow(addresses_results()) == 0) {
       textOutput("No results")
@@ -43,19 +43,19 @@ shinyServer(function(input, output, session) {
             FUN = function(item) { return(item$id) }
           )
         })
-      selectInput("select_addresses", label = "Choose among :", choices = list_of_address)
+      selectInput("select_addresses", label = "Choix :", choices = list_of_address)
     }
   })
   
   # bouton de recherche 
   output$find_button <- renderUI({
     if (nrow(addresses_results()) > 0) {
-      actionButton("select", label = "Find my cadaster !")
+      actionButton("select", label = "Trouver mon cadastre !")
     }
-  
+    
   })
   
-
+  
   #Map and polygon handeling 
   output$map <- renderLeaflet({
     leaflet() %>% addTiles() %>% setView( 2.3037,46.4317, zoom = 6)
@@ -98,6 +98,7 @@ shinyServer(function(input, output, session) {
   complentary_content <- reactive({
     get_complementary_data(coordinates()[[2]])
   })
+  
   observe({
     leafletProxy("map") %>% clearPopups()
     event <- input$map_shape_click
