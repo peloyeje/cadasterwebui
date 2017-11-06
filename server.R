@@ -5,109 +5,130 @@ library(dplyr)
 library(leaflet)
 
 shinyServer(function(input, output, session) {
-  
-  #résultats de la rechrche 
-  addresses_results <- eventReactive(input$search, {
+  # Base variables
+  layers <- c("batiments", "parcelles", "feuilles", "sections")
+
+  # Reactive values
+  # --
+  # When the search address form is submitted, search the input against the BANO database
+  address_choices <- eventReactive(input$search, {
+    # Check if the address is long enough
     validate(
       need(nchar(input$search_address) > 10, "Not enough characters")
     )
-    cadastertools::get_adress_data(input$search_address)
+    
+    tryCatch(
+      as.data.frame(cadastertools::get_bano_matches(input$search_address)),
+      error = function(e) {
+        message("Error during address search :")
+        message(e)
+        return(NULL)
+      }
+    )
   })
   
-  coordinates <- eventReactive(input$select, {
+  # --
+  # Get address selected from the dropdown list
+  selected_address <- eventReactive(input$select, {
     validate(
-      need(!is.null(input$select_addresses), "You must select an address")
+      need(!is.null(input$selected_address), "Merci de sélectionner une adresse")
     )
-    selected_address <- addresses_results() %>% filter(id == input$select_addresses)
-    polygons <- cadastertools::get_cadaster_sp(selected_address$citycode)
-    zone <- cadastertools::get_nearest_polygon(
-      polygons,
-      selected_address$longitude,
-      selected_address$latitude
-    )
-    list(zone, selected_address)
+
+    address_choices() %>% filter(id == input$selected_address)
   })
   
+  # Download all required files for the selected address
+  layer_paths <- reactive({
+    sapply(layers, USE.NAMES = TRUE, simplify = FALSE, FUN = function(layer) {
+      cadastertools::download_cadaster(selected_address()$citycode, layer)
+    })
+  })
+
+  nearest_building <- reactive({
+    if (length(layer_paths()) != 0 & "batiments" %in% names(layer_paths())) {
+      geo_data <- cadastertools::json_to_sf(layer_paths()$batiments)
+      cadastertools::get_nearest_polygon(
+        geo_data,
+        selected_address()$longitude,
+        selected_address()$latitude
+      )
+    }
+  })
   
-  
-  #bouton de choix de l'adresse 
+  # # Displays the addresses found on BANO
   output$choices <- renderUI({
-    if (nrow(addresses_results()) == 0) {
-      textOutput("No results")
-    } else {
-      list_of_address <- addresses_results() %>% 
-        arrange(desc(score)) %>% 
+    if (!is.null(address_choices())) {
+      # Creates a new UI element and reformats the address dataset into a id/label list
+      data <- address_choices() %>%
+        arrange(desc(score)) %>%
         (function(dataset) {
           lapply(
-            split(dataset, dataset$label), 
+            split(dataset, dataset$label),
             FUN = function(item) { return(item$id) }
           )
         })
-      selectInput("select_addresses", label = "Choix :", choices = list_of_address)
+
+      tagList(
+        selectInput(
+          "selected_address",
+          label = "Choix :",
+          choices = data
+        ),
+        actionButton(
+          "select",
+          label = "Trouver mon cadastre !"
+        )
+      )
+    } else {
+      textOutput("Pas de résultats")
     }
   })
-  
-  # bouton de recherche 
-  output$find_button <- renderUI({
-    if (nrow(addresses_results()) > 0) {
-      actionButton("select", label = "Trouver mon cadastre !")
-    }
-    
-  })
-  
-  
-  #Map and polygon handeling 
+
+  # Create the initial map
   output$map <- renderLeaflet({
-    leaflet() %>% addTiles() %>% setView( 2.3037,46.4317, zoom = 6)
+    leaflet() %>% 
+      addTiles() %>% 
+      setView(2.3037, 46.4317, zoom = 6)
+  })
+
+  # Update the map each time nearest geo entry is updated
+  observe({
+    leafletProxy("map", data = nearest_building()$geometry) %>%
+      clearShapes() %>% 
+      clearPopups() %>% 
+      addPolygons(color = "#444444") %>%
+      setView(selected_address()$longitude, selected_address()$latitude, zoom = 18)
+  })
+
+  complementary_data <- reactive({
+    sapply(layer_paths()[-1], USE.NAMES = TRUE, simplify = FALSE, FUN = function(layer) {
+      df <- cadastertools::json_to_sf(layer)
+      return(
+        cadastertools::get_parent_polygon(nearest_building(), df)
+      )
+    })
+  })
+  
+  formatted_complementary_data <- reactive({
+    glue::glue("<strong>parcelle number </strong>: {parcelle_number} with area {parcelle_area} </br>
+        <strong>feuille id</strong> : {feuille_id} <br>
+        <strong>section id </strong>: {section_id}",
+        parcelle_number = complementary_data()$parcelles$id,
+        parcelle_area = cadastertools::get_area(complementary_data()$parcelles$geometry) %>% format(nsmall = 1),
+        feuille_id = complementary_data()$feuilles$id,
+        section_id = complementary_data()$sections$id
+    )
   })
   
   observe({
-    leafletProxy("map") %>% clearShapes()
-    leafletProxy("map", data = coordinates()[[1]]) %>% 
-      addPolygons(color = "#444444") %>% 
-      setView(coordinates()[[2]]$longitude, coordinates()[[2]]$latitude, zoom = 18)
-  })
-  
-  
-  #Complementary data handeling 
-  
-  get_complementary_data <- function (adress_data){
-    #parcelle info 
-    parcelle <- get_cadaster_sp(adress_data$citycode, layer = "parcelles") %>% 
-      get_nearest_polygon(adress_data$longitude, adress_data$latitude)
-    parcelle_number <- get_parcelle_number(parcelle)
-    parcelle_area <- get_area(parcelle)
-    
-    #feuille info
-    feuille <- get_cadaster_sp(adress_data$citycode, layer = "feuilles") %>% 
-      get_nearest_polygon(adress_data$longitude, adress_data$latitude)
-    feuille_id <- get_id(feuille)
-    
-    #section info 
-    section <- get_cadaster_sp(adress_data$citycode, layer = "sections") %>% 
-      get_nearest_polygon(adress_data$longitude, adress_data$latitude)
-    section_id <- get_id(section)
-    
-    content <- glue::glue("<strong>parcelle number </strong>: {parcelle_number} with area {parcelle_area} </br>
-                          <strong>feuille id</strong> : {feuille_id} <br>
-                          <strong>section id </strong>: {section_id}")
-    
-    return(content)
-  }
-  
-  complentary_content <- reactive({
-    get_complementary_data(coordinates()[[2]])
-  })
-  
-  observe({
-    leafletProxy("map") %>% clearPopups()
     event <- input$map_shape_click
     if (is.null(event))
       return()
     
     isolate({
-      leafletProxy("map") %>% addPopups(event$lng, event$lat, complentary_content())
+      leafletProxy("map") %>% addPopups(event$lng, event$lat, formatted_complementary_data())
     })
   })
+ 
   
 })
