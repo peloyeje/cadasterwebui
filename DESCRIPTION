@@ -1,0 +1,21 @@
+Package: cadasterwebui
+Title: Web UI for the cadaster project
+Version: 1.0.0
+Author: Régis Bouyoux, 
+    Jean-Eudes Peloye, 
+    Antoine Redier
+Maintainer: Régis Bouyoux <regis.bouyoux@hec.edu>, 
+    Jean-Eudes Peloye <jean-eudes.peloye@hec.edu>, 
+    Antoine Redier <antoine.redier2@gmail.com>
+Description: This package implements a Shiny web application to interact with the French cadaster database. It also provides a way to draw shapes onto the map and compute their area. 
+Depends: R (>= 3.4.2)
+License: GPL
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 6.0.1
+Imports: shiny,
+  cadastertools
+Remotes: peloyeje/cadastertools
+Suggests: knitr,
+    rmarkdown
+VignetteBuilder: knitr

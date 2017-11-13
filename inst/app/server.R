@@ -3,9 +3,7 @@ library(assertthat)
 library(dplyr)
 library(leaflet)
 library(sf)
-
-library(devtools)
-install_github("peloyeje/cadastertools")
+library(cadastertools)
 
 shinyServer(function(input, output, session) {
   # Base variables
