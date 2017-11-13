@@ -17,6 +17,7 @@ shinyUI(
       h3("Veuillez rentrer votre adresse"),
       textInput("search_address", label = "", placeholder = "Enter an address", value = "6 rue du débarcadère"),
       actionButton("search", label = "Rechercher"),
-      uiOutput("choices")
+      uiOutput("choices"),
+      checkboxInput("draw", label = "Activer le mode calcul d'aire")
   )
 ))
