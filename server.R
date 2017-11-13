@@ -96,7 +96,7 @@ shinyServer(function(input, output, session) {
     leafletProxy("map", data = nearest_building()$geometry) %>%
       clearShapes() %>% 
       clearPopups() %>% 
-      addPolygons(color = "#444444") %>%
+      addPolygons(color = "#444444", popup = formatted_complementary_data()) %>%
       setView(selected_address()$longitude, selected_address()$latitude, zoom = 18)
   })
 
@@ -119,16 +119,4 @@ shinyServer(function(input, output, session) {
         section_id = complementary_data()$sections$id
     )
   })
-  
-  observe({
-    event <- input$map_shape_click
-    if (is.null(event))
-      return()
-    
-    isolate({
-      leafletProxy("map") %>% addPopups(event$lng, event$lat, formatted_complementary_data())
-    })
-  })
- 
-  
 })
