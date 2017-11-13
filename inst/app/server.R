@@ -2,7 +2,6 @@ library(shiny)
 library(assertthat)
 library(dplyr)
 library(leaflet)
-library(sf)
 library(cadastertools)
 
 shinyServer(function(input, output, session) {

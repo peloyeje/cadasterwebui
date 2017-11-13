@@ -1,4 +1,7 @@
 devtools::use_data_raw()
 devtools::use_package("shiny")
+devtools::use_package("assertthat")
+devtools::use_package("dplyr")
+devtools::use_package("leaflet")
 devtools::install_github("peloyeje/cadastertools")
 devtools::use_vignette("cadasterwebui")
