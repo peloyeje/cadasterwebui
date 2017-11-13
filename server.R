@@ -79,8 +79,8 @@ shinyServer(function(input, output, session) {
     glue::glue("<strong>parcelle number </strong>: {parcelle_number} with area {parcelle_area} </br>
                <strong>feuille id</strong> : {feuille_id} <br>
                <strong>section id </strong>: {section_id}",
-               parcelle_number = complementary_data()$parcelles$id,
-               parcelle_area = cadastertools::get_area(complementary_data()$parcelles$geometry) %>% format(nsmall = 1),
+               parcelle_number = complementary_data()$parcelles[[2]],
+               parcelle_area = cadastertools::get_area(complementary_data()$parcelles$geometry) %>% format(ndigits = 2, nsmall = 1),
                feuille_id = complementary_data()$feuilles$id,
                section_id = complementary_data()$sections$id
     )
