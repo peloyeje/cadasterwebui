@@ -4,9 +4,15 @@ This project acts as an user interface for the [cadastertools](https://github.co
 
 ### Installation
 
-1. Clone the repository
-2. Open the project in RStudio
-3. Run App
+1. Install `devtools`
+2. Run `devtools::install_github("peloyeje/cadasterwebui")`
+
+### Launch the app
+
+```
+library(cadasterwebui)
+cadasterwebui::runApp()
+```
 
 ### Credits
 

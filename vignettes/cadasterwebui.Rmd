@@ -1,0 +1,33 @@
+---
+title: "Cadaster Web UI"
+author: "Régis Bouyoux, Jean-Eudes Peloye, Antoine Redier"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+This project acts as an user interface for the [cadastertools](https://github.com/peloyeje/cadastertools) package.
+
+### Installation
+
+```{r}
+install.packages("devtools")
+devtools::install_github("peloyeje/cadasterwebui")
+```
+
+### Launch the app
+
+```{r}
+library(cadasterwebui)
+cadasterwebui::runApp()
+```
+
+
+### Credits
+
+- Régis Bouyoux
+- Jean-Eudes Peloye
+- Antoine Redier
