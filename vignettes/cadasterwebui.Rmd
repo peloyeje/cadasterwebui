@@ -13,14 +13,14 @@ This project acts as an user interface for the [cadastertools](https://github.co
 
 ### Installation
 
-```{r}
-install.packages("devtools")
+```{r eval=FALSE}
+library(devtools)
 devtools::install_github("peloyeje/cadasterwebui")
 ```
 
 ### Launch the app
 
-```{r}
+```{r eval=FALSE}
 library(cadasterwebui)
 cadasterwebui::runApp()
 ```
