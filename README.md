@@ -14,7 +14,7 @@ library(cadasterwebui)
 cadasterwebui::runApp()
 ```
 
-### Credits
+### Authors
 
 - Régis Bouyoux
 - Jean-Eudes Peloye
